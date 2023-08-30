@@ -1,25 +1,56 @@
 import logo from './logo.svg';
 import './App.css';
+import Button from '@mui/material/Button';
+import {Route} from "react-router-dom";
+import  {RouterProvider} from "react-router-dom";
+import { createBrowserRouter} from "react-router-dom";
+import {createRoutesFromElements} from "react-router-dom";
+import Layout from './Components/Layout.js';
+import Home from './pages/Home.js';
+import Cart from './pages/Cart';
+import Login from './pages/Login';
+import { Provider } from 'react-redux';
+import { store } from './store';
+import Checkout from './pages/Checkout';
+import AuthProvider, { useAuth } from './firebase/Auth';
+import { Navigate } from 'react-router-dom';
+import Register from './pages/Register';
+
+function ProtectedRoute({children}){
+  const {user} = useAuth();
+  if(!user){
+    return <Navigate to={"/login"} />
+  }
+  return children;
+}
+const router= createBrowserRouter(
+  createRoutesFromElements(
+    <>
+    <Route path="/" element={<Layout />}>
+      <Route index element={<Home /> } />
+      <Route path='/cart' index element={<Cart />} />
+      <Route path='/checkout' index element={ 
+         <ProtectedRoute>
+          <Checkout />
+         </ProtectedRoute>} />
+        
+    </Route>
+    <Route path='/login' index element={<Login />} />
+    <Route path='/register' index element={<Register />} />
+    </> 
+    )
+);
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+  return(
+  <AuthProvider>
+     <Provider store={store}>
+    <RouterProvider router={router} />
+  </Provider>
+  </AuthProvider>  
+  
   );
+  
 }
 
 export default App;
